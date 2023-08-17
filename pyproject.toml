@@ -1,0 +1,93 @@
+[tool.poetry]
+name = "prion"
+version = "0.0.0"
+description = "Dependency injection framework implemented with pure Python"
+authors = ["Geunryeol Park <pkr5207@gmail.com>"]
+repository = "https://github.com/misut/prion"
+classifiers = [
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python",
+  "Topic :: Utilities"
+]
+license = "MIT"
+packages = [{ include = "prion", from = "src" }]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+
+[tool.poetry.group.dev.dependencies]
+black = "^23.3.0"
+isort = "^5.12.0"
+mypy = "^1.3.0"
+pycln = "^2.1.5"
+pytest = "^7.3.2"
+pytest-cov = "^4.1.0"
+ruff = "^0.0.272"
+
+[tool.coverage.run]
+branch = true
+
+[tool.coverage.report]
+exclude_also = [
+    "pragma: no cover",
+    "if __name__ == .__main__.:",
+    "class .*\\bProtocol\\):",
+    "@(abc\\.)?abstractmethod"
+]
+fail_under = 90
+show_missing = true
+
+[tool.isort]
+profile = "black"
+src_paths = ["src", "tests"]
+
+[tool.mypy]
+incremental = true
+plugins = []
+pretty = true
+strict = true
+
+[tool.poe.tasks]
+_pycln = "pycln src tests"
+_black = "black src tests"
+_isort = "isort src tests"
+format = ["_pycln", "_black", "_isort"]
+
+_ruff = "ruff check --fix src tests"
+lint = ["_ruff"]
+
+fix = ["format", "lint"]
+
+_pycln_check = "pycln --check src tests"
+_black_check = "black --check src tests"
+_isort_check = "isort --check-only src tests"
+format-check = ["_pycln_check", "_black_check", "_isort_check"]
+
+_ruff-check = "ruff check src tests"
+lint-check = ["_ruff-check"]
+
+_mypy = "mypy src tests"
+typetest = ["_mypy"]
+
+unittest = "pytest -vvsx tests"
+coverage = "pytest --cov=src tests"
+tests = ["unittest", "coverage"]
+
+checks = ["format-check", "lint-check", "typetest", "tests"]
+
+[tool.ruff]
+ignore = [
+    "E501",
+    "I001",
+]
+select = [
+    "F",
+    "E",
+    "W",
+    "I",
+]
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
