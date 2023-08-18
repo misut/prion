@@ -1,49 +1,18 @@
-from collections.abc import Container
-from typing import Final, Generic, TypeVar
+from collections.abc import MutableMapping
+from typing import Final, Generic, Iterator, TypeVar
 
-T = TypeVar("T", covariant=True)
-U = TypeVar("U")
+from prion.collections.node import Node
 
-ROOT_PATH: Final = "$"
+T = TypeVar("T")
 
-
-class _Node(Container[str], Generic[T]):
-    _key: Final[str]
-    _value: T | None
-    _nodes: dict[str, "_Node[T]"]
-
-    def __init__(self, key: str, value: T | None = None) -> None:
-        self._key = key
-        self._value = value
-        self._nodes = {}
-
-    def __contains__(self, key: object) -> bool:
-        match key:
-            case str(key):
-                return key in self._nodes
-            case _:
-                raise TypeError()
-
-    def __getitem__(self, key: str) -> "_Node[T]":
-        return self._nodes[key]
-
-    def __setitem__(self, key: str, value: T | None) -> None:
-        self._nodes[key] = _Node[T](key, value)
-
-    @property
-    def value(self) -> T | None:
-        return self._value
-
-    @value.setter
-    def value(self, value: T | None) -> None:
-        self._value = value
+ROOT_KEY: Final = "$"
 
 
-class Tree(Container[str], Generic[T]):
-    _root: _Node[T]
+class Tree(MutableMapping[str, T], Generic[T]):
+    _root: Node[T]
 
-    def __init__(self) -> None:
-        self._root = _Node(ROOT_PATH)
+    def __init__(self, node: Node[T] | None = None) -> None:
+        self._root = Node(ROOT_KEY) if node is None else node
 
     def __contains__(self, path: object) -> bool:
         match path:
@@ -59,7 +28,20 @@ class Tree(Container[str], Generic[T]):
 
             node = node[key]
 
-        return True
+        return node.value is not None
+
+    def __delitem__(self, path: str) -> None:
+        keys = path.split(".")
+
+        node = self._root
+        for key in keys:
+            if key not in node:
+                raise KeyError()
+            node = node[key]
+
+        if node.value is None:
+            raise KeyError()
+        node.value = None
 
     def __getitem__(self, path: str) -> T:
         keys = path.split(".")
@@ -78,8 +60,24 @@ class Tree(Container[str], Generic[T]):
         node = self._root
         for key in keys:
             if key not in node:
-                node[key] = None
+                node[key] = Node(key)
 
             node = node[key]
 
         node.value = value
+
+    def __iter__(self) -> Iterator[str]:
+        root = self._root
+        prefix = "" if root.key == ROOT_KEY else root.key
+        for child in root.values():
+            for path in Tree(child):
+                yield f"{prefix}.{path}" if prefix else path
+
+        if root.key != ROOT_KEY and root.value is not None:
+            yield root.key
+
+    def __len__(self) -> int:
+        res = 0 if self._root.value is None else 1
+        for node in self._root.values():
+            res += len(Tree(node))
+        return res
