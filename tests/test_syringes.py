@@ -1,4 +1,5 @@
 import pytest
+
 from prion.syringes import BaseSyringe
 
 
