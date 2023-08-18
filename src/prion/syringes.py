@@ -3,13 +3,13 @@ from types import ModuleType
 from typing import Any, ParamSpec, TypeVar
 
 from prion.collections import Tree
-from prion.models import Singleton
+from prion.metaclasses import Singleton
 
 P = ParamSpec("P")
 R = TypeVar("R")
 
 
-class BaseSyringe(Singleton):
+class BaseSyringe(metaclass=Singleton):
     _granted: Tree[list["BaseSyringe"]] = Tree()
 
     @singledispatchmethod
