@@ -27,7 +27,7 @@ def test_prion() -> None:
     from tests import test_prion
 
     tmp = test_prion.__name__
-    test_prion.__name__ = None
+    test_prion.__name__ = ""
     with pytest.raises(ValueError):
         syringe_bar.grant(test_prion)
 
