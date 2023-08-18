@@ -28,6 +28,7 @@ def test_node() -> None:
     del node["baz"]
     assert len(node) == 1
 
+
 def test_tree() -> None:
     tree = Tree[int]()
     tree["foo"] = 123
