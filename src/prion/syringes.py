@@ -26,9 +26,9 @@ class BaseSyringe(metaclass=Singleton):
     @grant.register
     def _(self, *modules: ModuleType) -> None:
         for module in modules:
-            if not module.__spec__:
-                raise ValueError(f"No Module Spec Found {module}")
-            self.grant(module.__spec__.name)
+            if not module.__name__:
+                raise ValueError(f"No Module Name Found {module}")
+            self.grant(module.__name__)
 
 
 def list_syringes(module_path: str) -> list["BaseSyringe"] | None:

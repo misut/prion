@@ -26,11 +26,11 @@ def test_prion() -> None:
     syringe_bar = SyringeBar()
     from tests import test_prion
 
-    tmp = test_prion.__spec__
-    test_prion.__spec__ = None
+    tmp = test_prion.__name__
+    test_prion.__name__ = None
     with pytest.raises(ValueError):
         syringe_bar.grant(test_prion)
 
-    test_prion.__spec__ = tmp
+    test_prion.__name__ = tmp
     syringe_bar.grant(test_prion)
     assert fun_bar() == 456

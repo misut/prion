@@ -14,10 +14,10 @@ def _inject_function(callable: Callable[P, R]) -> Callable[P, R]:
     @wraps(callable)
     def wrapper(*args: P.args, **kwargs: P.kwargs) -> R:
         module = inspect.getmodule(callable)
-        if not (module and module.__spec__):
+        if not (module and module.__name__):
             return callable(*args, **kwargs)
 
-        syringes = list_syringes(module.__spec__.name)
+        syringes = list_syringes(module.__name__)
         if not syringes:
             return callable(*args, **kwargs)
 
