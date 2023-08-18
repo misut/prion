@@ -15,18 +15,14 @@ def _inject_function(callable: Callable[P, R]) -> Callable[P, R]:
     def wrapper(*args: P.args, **kwargs: P.kwargs) -> R:
         module = inspect.getmodule(callable)
         if not (module and module.__name__):
-            return callable(*args, **kwargs)
-
-        syringes = list_syringes(module.__name__)
-        if not syringes:
-            return callable(*args, **kwargs)
+            raise ValueError(f"No Module Found {module}")
 
         signature = inspect.signature(callable)
         for param in signature.parameters.values():
             if not isinstance(param.default, _Injector):
                 continue
 
-            for syringe in syringes:
+            for syringe in list_syringes(module.__name__):
                 if hasattr(syringe, param.default._attr):
                     kwargs[param.name] = getattr(syringe, param.default._attr)
                     break

@@ -13,8 +13,8 @@ class BaseSyringe(metaclass=Singleton):
     _granted: Tree[list["BaseSyringe"]] = Tree()
 
     @singledispatchmethod
-    def grant(self, *modules: Any) -> None:  # pragma: no cover
-        raise NotImplementedError()
+    def grant(self, *modules: Any) -> None:
+        raise ValueError(f"Not Supported Module Type {type(modules)}")
 
     @grant.register
     def _(self, *module_paths: str) -> None:
@@ -32,4 +32,7 @@ class BaseSyringe(metaclass=Singleton):
 
 
 def list_syringes(module_path: str) -> list["BaseSyringe"] | None:
-    return BaseSyringe._granted[module_path]
+    try:
+        return BaseSyringe._granted[module_path]
+    except KeyError:
+        raise ValueError(f"No Syringe Granted In This Module Path: {module_path}")

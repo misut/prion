@@ -13,6 +13,9 @@ def test_prion() -> None:
         foo = 123
 
     syringe_foo = SyringeFoo()
+    with pytest.raises(ValueError):
+        fun_foo()
+
     syringe_foo.grant(__name__)
     assert fun_foo() == 123
 
