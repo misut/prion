@@ -3,7 +3,7 @@ name = "prion"
 version = "0.1.0"
 description = "Dependency injection framework using pure Python"
 readme = "README.md"
-requires-python = ">=3.13"
+requires-python = ">=3.10"
 authors = [{name = "Geunryeol Park", email = "pkr5207@gmail.com"}]
 classifiers = [
   "License :: OSI Approved :: MIT License",
