@@ -19,3 +19,8 @@ build-backend = "uv_build"
 [tool.uv]
 managed = true
 resolution = "highest"
+
+[dependency-groups]
+dev = [
+    "pytest>=9.0.2",
+]
