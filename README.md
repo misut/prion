@@ -16,7 +16,7 @@ Define a container by subclassing `Syringe` and declaring dependencies with `sin
 from logging import Logger, getLogger
 from prion import Syringe, single, factory
 
-class Container(Syringe):
+class AppSyringe(Syringe):
     logger: Logger = single()
     handler: Logger = factory()
 ```
@@ -24,13 +24,13 @@ class Container(Syringe):
 Create an instance and register providers using decorators.
 
 ```py
-container = Container()
+syringe = AppSyringe()
 
-@container.logger
+@syringe.logger
 def create_logger() -> Logger:
     return getLogger("app")
 
-@container.handler
+@syringe.handler
 def create_handler() -> Logger:
     return getLogger("handler")
 ```
@@ -39,10 +39,10 @@ Access dependencies as attributes.
 
 ```py
 # single() returns the same instance every time
-assert container.logger is container.logger
+assert syringe.logger is syringe.logger
 
 # factory() returns a new instance every time
-assert container.handler is not container.handler
+assert syringe.handler is not syringe.handler
 ```
 
 ## Strategies
