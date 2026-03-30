@@ -20,6 +20,9 @@ build-backend = "uv_build"
 managed = true
 resolution = "highest"
 
+[tool.pytest.ini_options]
+addopts = ["--doctest-glob=*.md"]
+
 [dependency-groups]
 dev = [
     "pytest>=9.0.2",

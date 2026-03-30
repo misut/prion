@@ -12,37 +12,39 @@ pip install prion
 
 Define a container by subclassing `Syringe` and declaring dependencies with `single()` or `factory()`.
 
-```py
-from logging import Logger, getLogger
-from prion import Syringe, single, factory
+```pycon
+>>> from prion import Syringe, single, factory
 
-class AppSyringe(Syringe):
-    logger: Logger = single()
-    handler: Logger = factory()
+>>> class AppSyringe(Syringe):
+...     config: dict = single()
+...     session: dict = factory()
+
 ```
 
 Create an instance and register providers using decorators.
 
-```py
-syringe = AppSyringe()
+```pycon
+>>> syringe = AppSyringe()
 
-@syringe.logger
-def create_logger() -> Logger:
-    return getLogger("app")
+>>> @syringe.config
+... def create_config() -> dict:
+...     return {"debug": True}
 
-@syringe.handler
-def create_handler() -> Logger:
-    return getLogger("handler")
+>>> @syringe.session
+... def create_session() -> dict:
+...     return {}
+
 ```
 
 Access dependencies as attributes.
 
-```py
-# single() returns the same instance every time
-assert syringe.logger is syringe.logger
+```pycon
+>>> syringe.config is syringe.config
+True
 
-# factory() returns a new instance every time
-assert syringe.handler is not syringe.handler
+>>> syringe.session is not syringe.session
+True
+
 ```
 
 ## Strategies
