@@ -1,3 +1,19 @@
 [tools]
 python = "3.13"
 uv = "latest"
+
+[tasks."publish:test"]
+description = "Build and publish to Test PyPI"
+run = [
+  "rm -rf dist/",
+  "uv build",
+  "uv publish --publish-url https://test.pypi.org/legacy/ --token $TEST_PYPI_TOKEN",
+]
+
+[tasks."publish:pypi"]
+description = "Build and publish to PyPI"
+run = [
+  "rm -rf dist/",
+  "uv build",
+  "uv publish --token $PYPI_TOKEN",
+]
