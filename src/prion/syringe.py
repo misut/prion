@@ -11,6 +11,16 @@ class Syringe:
     def __init__(self) -> None:
         self._dependencies: dict[str, DependencyState[Any]] = {}
 
+    def reset(self) -> None:
+        for state in self._dependencies.values():
+            state.reset()
+
+    def __enter__(self) -> Syringe:
+        return self
+
+    def __exit__(self, *args: Any) -> None:
+        self.reset()
+
 
 class single(Dependency[T], Generic[T]):
     """Singleton dependency — provider is called once, result is cached."""

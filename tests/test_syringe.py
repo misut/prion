@@ -137,3 +137,41 @@ class TestThreadSafety:
 
         assert call_count == 1
         assert all(r == "hello" for r in results)
+
+
+class TestLifecycle:
+    def test_reset_clears_singleton_cache(self) -> None:
+        container = Container()
+        call_count = 0
+
+        @container.value
+        def provide() -> str:
+            nonlocal call_count
+            call_count += 1
+            return f"v{call_count}"
+
+        assert container.value == "v1"
+        assert container.value == "v1"
+        assert call_count == 1
+
+        container.reset()
+
+        assert container.value == "v2"
+        assert call_count == 2
+
+    def test_context_manager_resets_on_exit(self) -> None:
+        container = Container()
+        call_count = 0
+
+        @container.value
+        def provide() -> str:
+            nonlocal call_count
+            call_count += 1
+            return f"v{call_count}"
+
+        with container:
+            assert container.value == "v1"
+
+        # after exit, singleton cache is cleared
+        assert container.value == "v2"
+        assert call_count == 2
