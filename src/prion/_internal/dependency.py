@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import inspect
 import threading
 from typing import TYPE_CHECKING, Any, Callable, Generic, TypeVar, overload
 
@@ -12,14 +13,24 @@ T = TypeVar("T")
 
 
 class DependencyState(Generic[T]):
-    __slots__ = ("_strategy", "_provider", "_value", "_resolved", "_lock")
+    __slots__ = (
+        "_strategy",
+        "_provider",
+        "_value",
+        "_resolved",
+        "_lock",
+        "_owner",
+        "_resolving",
+    )
 
-    def __init__(self, strategy: str) -> None:
+    def __init__(self, strategy: str, owner: Syringe) -> None:
         self._strategy = strategy
         self._provider: Callable[..., T] | None = None
         self._value: T | None = None
         self._resolved = False
         self._lock = threading.Lock()
+        self._owner = owner
+        self._resolving = False
 
     def __call__(self, provider: Callable[..., T]) -> Callable[..., T]:
         self._provider = provider
@@ -30,18 +41,35 @@ class DependencyState(Generic[T]):
             raise RuntimeError("no provider registered for this dependency")
         if self._strategy == "single":
             if not self._resolved:
+                value = self._invoke()
                 with self._lock:
                     if not self._resolved:
-                        self._value = self._provider()
+                        self._value = value
                         self._resolved = True
             assert self._value is not None
             return self._value
-        return self._provider()
+        return self._invoke()
 
     def reset(self) -> None:
         with self._lock:
             self._value = None
             self._resolved = False
+
+    def _invoke(self) -> T:
+        assert self._provider is not None
+        if self._resolving:
+            raise RuntimeError("circular dependency detected")
+        self._resolving = True
+        try:
+            params = inspect.signature(self._provider).parameters
+            kwargs: dict[str, Any] = {}
+            for name in params:
+                dep_state = self._owner._dependencies.get(name)
+                if dep_state is not None and dep_state._provider is not None:
+                    kwargs[name] = dep_state.resolve()
+            return self._provider(**kwargs)
+        finally:
+            self._resolving = False
 
 
 class Dependency(Generic[T]):
@@ -67,7 +95,7 @@ class Dependency(Generic[T]):
             return self  # type: ignore[return-value]
         state = obj._dependencies.get(self._attr)
         if state is None:
-            state = DependencyState[T](self._strategy)
+            state = DependencyState[T](self._strategy, obj)
             obj._dependencies[self._attr] = state
         if state._provider is None:
             return state

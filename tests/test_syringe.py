@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import threading
 
+import pytest
+
 from prion import Syringe, factory, single
 
 
@@ -175,3 +177,69 @@ class TestLifecycle:
         # after exit, singleton cache is cleared
         assert container.value == "v2"
         assert call_count == 2
+
+
+class WiredContainer(Syringe):
+    config = single[dict]()
+    greeting = single[str]()
+    message = factory[str]()
+
+
+class TestDependencyWiring:
+    def test_provider_receives_other_dependency(self) -> None:
+        container = WiredContainer()
+
+        @container.config
+        def create_config() -> dict:
+            return {"name": "world"}
+
+        @container.greeting
+        def create_greeting(config: dict) -> str:
+            return f"hello {config['name']}"
+
+        assert container.greeting == "hello world"
+
+    def test_factory_receives_singleton(self) -> None:
+        container = WiredContainer()
+        call_count = 0
+
+        @container.config
+        def create_config() -> dict:
+            nonlocal call_count
+            call_count += 1
+            return {"v": call_count}
+
+        @container.message
+        def create_message(config: dict) -> str:
+            return f"v{config['v']}"
+
+        assert container.message == "v1"
+        assert container.message == "v1"
+        assert call_count == 1  # config is singleton, called once
+
+    def test_circular_dependency_raises(self) -> None:
+        class Circular(Syringe):
+            a = single[str]()
+            b = single[str]()
+
+        container = Circular()
+
+        @container.a
+        def create_a(b: str) -> str:
+            return f"a({b})"
+
+        @container.b
+        def create_b(a: str) -> str:
+            return f"b({a})"
+
+        with pytest.raises(RuntimeError, match="circular dependency"):
+            _ = container.a
+
+    def test_unknown_params_are_ignored(self) -> None:
+        container = WiredContainer()
+
+        @container.config
+        def create_config(unknown_param: str = "default") -> dict:
+            return {"key": unknown_param}
+
+        assert container.config == {"key": "default"}
