@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import threading
 from typing import TYPE_CHECKING, Any, Callable, Generic, TypeVar, overload
 
 if TYPE_CHECKING:
@@ -11,13 +12,14 @@ T = TypeVar("T")
 
 
 class DependencyState(Generic[T]):
-    __slots__ = ("_strategy", "_provider", "_value", "_resolved")
+    __slots__ = ("_strategy", "_provider", "_value", "_resolved", "_lock")
 
     def __init__(self, strategy: str) -> None:
         self._strategy = strategy
         self._provider: Callable[..., T] | None = None
         self._value: T | None = None
         self._resolved = False
+        self._lock = threading.Lock()
 
     def __call__(self, provider: Callable[..., T]) -> Callable[..., T]:
         self._provider = provider
@@ -28,8 +30,10 @@ class DependencyState(Generic[T]):
             raise RuntimeError("no provider registered for this dependency")
         if self._strategy == "single":
             if not self._resolved:
-                self._value = self._provider()
-                self._resolved = True
+                with self._lock:
+                    if not self._resolved:
+                        self._value = self._provider()
+                        self._resolved = True
             assert self._value is not None
             return self._value
         return self._provider()
