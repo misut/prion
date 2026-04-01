@@ -2,6 +2,46 @@
 python = "3.13"
 uv = "latest"
 
+[tasks.check-format]
+run = ["uvx ruff check", "uvx ruff format --check"]
+
+[tasks.check-type]
+run = "uvx ty check"
+
+[tasks.check]
+depends = [
+  "check-format",
+  "check-type"
+]
+
+[tasks.fix-format]
+run = "uvx ruff format"
+wait_for = ["fix-import"]
+
+[tasks.fix-import]
+run = "uvx ruff check --fix --select F401,I"
+
+[tasks.fix-lint]
+run = "uvx ruff check --fix"
+wait_for = ["fix-import"]
+
+[tasks.fix]
+depends = [
+  "fix-format",
+  "fix-import",
+  "fix-lint"
+]
+
+[tasks.test]
+run = "uv run pytest"
+
+[tasks.setup]
+description = "Install git hooks"
+run = [
+  "cp hooks/pre-commit .git/hooks/pre-commit",
+  "chmod +x .git/hooks/pre-commit",
+]
+
 [tasks."publish:test"]
 description = "Build and publish to Test PyPI"
 run = [

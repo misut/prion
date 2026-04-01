@@ -49,7 +49,9 @@ class Dependency(Generic[T]):
     def __get__(self, obj: None, objtype: type | None = None) -> Self: ...
 
     @overload
-    def __get__(self, obj: Syringe, objtype: type | None = None) -> DependencyState[T]: ...
+    def __get__(
+        self, obj: Syringe, objtype: type | None = None
+    ) -> DependencyState[T]: ...
 
     def __get__(self, obj: Syringe | None, objtype: type | None = None) -> Any:
         if obj is None:
