@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from typing import Any, Generic, TypeVar
+from contextlib import contextmanager
+from typing import Any, Generator, Generic, TypeVar
 
 from prion._internal.dependency import Dependency, DependencyState
 
@@ -20,6 +21,24 @@ class Syringe:
 
     def __exit__(self, *args: Any) -> None:
         self.reset()
+
+    @contextmanager
+    def override(self, name: str, provider: Any) -> Generator[None, None, None]:
+        state = self._dependencies.get(name)
+        if state is None:
+            raise KeyError(f"unknown dependency: {name}")
+        old_provider = state._provider
+        old_value = state._value
+        old_resolved = state._resolved
+        state._provider = provider
+        state._value = None
+        state._resolved = False
+        try:
+            yield
+        finally:
+            state._provider = old_provider
+            state._value = old_value
+            state._resolved = old_resolved
 
 
 class single(Dependency[T], Generic[T]):
