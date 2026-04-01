@@ -38,6 +38,11 @@ class DependencyState(Generic[T]):
             return self._value
         return self._provider()
 
+    def reset(self) -> None:
+        with self._lock:
+            self._value = None
+            self._resolved = False
+
 
 class Dependency(Generic[T]):
     __slots__ = ("_strategy", "_attr")
