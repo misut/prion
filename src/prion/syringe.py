@@ -1,19 +1,27 @@
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Generic, TypeVar
 
 from prion._internal.dependency import Dependency, DependencyState
+
+T = TypeVar("T")
 
 
 class Syringe:
 
     def __init__(self) -> None:
-        self._dependencies: dict[str, DependencyState] = {}
+        self._dependencies: dict[str, DependencyState[Any]] = {}
 
 
-def single() -> Any:
-    return Dependency("single")
+class single(Dependency[T], Generic[T]):
+    """Singleton dependency — provider is called once, result is cached."""
+
+    def __init__(self) -> None:
+        super().__init__("single")
 
 
-def factory() -> Any:
-    return Dependency("factory")
+class factory(Dependency[T], Generic[T]):
+    """Factory dependency — provider is called on every access."""
+
+    def __init__(self) -> None:
+        super().__init__("factory")
