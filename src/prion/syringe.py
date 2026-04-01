@@ -8,7 +8,6 @@ T = TypeVar("T")
 
 
 class Syringe:
-
     def __init__(self) -> None:
         self._dependencies: dict[str, DependencyState[Any]] = {}
 

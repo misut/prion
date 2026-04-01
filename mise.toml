@@ -35,6 +35,13 @@ depends = [
 [tasks.test]
 run = "uv run pytest"
 
+[tasks.setup]
+description = "Install git hooks"
+run = [
+  "cp hooks/pre-commit .git/hooks/pre-commit",
+  "chmod +x .git/hooks/pre-commit",
+]
+
 [tasks."publish:test"]
 description = "Build and publish to Test PyPI"
 run = [
