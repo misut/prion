@@ -23,6 +23,9 @@ resolution = "highest"
 [tool.pytest.ini_options]
 addopts = ["--doctest-glob=*.md"]
 
+[tool.ruff.lint]
+ignore = ["F403"]
+
 [dependency-groups]
 dev = [
     "pytest>=9.0.2",
