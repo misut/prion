@@ -8,9 +8,22 @@ authors = [{ name = "Geunryeol Park", email = "pkr5207@gmail.com" }]
 classifiers = [
   "License :: OSI Approved :: MIT License",
   "Programming Language :: Python",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Topic :: Software Development :: Libraries :: Application Frameworks",
   "Topic :: Utilities",
+  "Typing :: Typed",
 ]
+keywords = ["dependency-injection", "di", "ioc"]
 license = "MIT"
+
+[project.urls]
+Homepage = "https://github.com/misut/prion"
+Repository = "https://github.com/misut/prion"
+Issues = "https://github.com/misut/prion/issues"
 
 [build-system]
 requires = ["uv_build>=0.9.26,<0.10.0"]
