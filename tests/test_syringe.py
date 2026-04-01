@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import threading
+
 from prion import Syringe, factory, single
 
 
@@ -107,3 +109,31 @@ class TestIsolation:
         # factory has no provider registered — returns the slot, not a value
         slot = container.creator
         assert callable(slot)
+
+
+class TestThreadSafety:
+    def test_single_is_thread_safe(self) -> None:
+        container = Container()
+        call_count = 0
+        lock = threading.Lock()
+
+        @container.value
+        def provide() -> str:
+            nonlocal call_count
+            with lock:
+                call_count += 1
+            return "hello"
+
+        results: list[str] = []
+
+        def access() -> None:
+            results.append(container.value)
+
+        threads = [threading.Thread(target=access) for _ in range(50)]
+        for t in threads:
+            t.start()
+        for t in threads:
+            t.join()
+
+        assert call_count == 1
+        assert all(r == "hello" for r in results)
