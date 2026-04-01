@@ -6,8 +6,8 @@ from prion import Syringe, factory, single
 
 
 class Container(Syringe):
-    value: str = single()
-    creator: str = factory()
+    value = single[str]()
+    creator = factory[str]()
 
 
 class TestSingle:
@@ -16,7 +16,7 @@ class TestSingle:
 
         @container.value
         def provide() -> str:
-            return object()
+            return "hello"
 
         a = container.value
         b = container.value
@@ -44,7 +44,7 @@ class TestFactory:
 
         @container.creator
         def provide() -> str:
-            return object()
+            return str(id(object()))
 
         a = container.creator
         b = container.creator
