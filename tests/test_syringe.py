@@ -126,7 +126,7 @@ class TestThreadSafety:
                 call_count += 1
             return "hello"
 
-        results: list[str] = []
+        results: list[object] = []
 
         def access() -> None:
             results.append(container.value)
@@ -243,3 +243,45 @@ class TestDependencyWiring:
             return {"key": unknown_param}
 
         assert container.config == {"key": "default"}
+
+
+class TestOverride:
+    def test_override_replaces_provider(self) -> None:
+        container = Container()
+
+        @container.value
+        def provide() -> str:
+            return "original"
+
+        assert container.value == "original"
+
+        with container.override("value", lambda: "mocked"):
+            assert container.value == "mocked"
+
+        assert container.value == "original"
+
+    def test_override_restores_cached_singleton(self) -> None:
+        container = Container()
+        call_count = 0
+
+        @container.value
+        def provide() -> str:
+            nonlocal call_count
+            call_count += 1
+            return f"v{call_count}"
+
+        assert container.value == "v1"
+
+        with container.override("value", lambda: "mock"):
+            assert container.value == "mock"
+
+        # original cached value is restored, not re-created
+        assert container.value == "v1"
+        assert call_count == 1
+
+    def test_override_unknown_dependency_raises(self) -> None:
+        container = Container()
+
+        with pytest.raises(KeyError, match="unknown dependency"):
+            with container.override("nonexistent", lambda: "x"):
+                pass
