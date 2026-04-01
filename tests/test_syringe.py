@@ -126,7 +126,7 @@ class TestThreadSafety:
                 call_count += 1
             return "hello"
 
-        results: list[str] = []
+        results: list[object] = []
 
         def access() -> None:
             results.append(container.value)
