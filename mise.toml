@@ -6,7 +6,7 @@ uv = "latest"
 run = ["uvx ruff check", "uvx ruff format --check"]
 
 [tasks.check-type]
-run = "uvx ty check"
+run = ["uvx ty check", "uvx mypy src/"]
 
 [tasks.check]
 depends = [
