@@ -35,6 +35,10 @@ resolution = "highest"
 [tool.pytest.ini_options]
 addopts = ["--doctest-glob=*.md"]
 
+[tool.mypy]
+strict = true
+warn_unused_ignores = false
+
 [tool.ruff.lint]
 ignore = ["F403"]
 
