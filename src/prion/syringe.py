@@ -12,6 +12,16 @@ class Syringe:
     def __init__(self) -> None:
         self._dependencies: dict[str, DependencyState[Any]] = {}
 
+    def warm(self) -> None:
+        for name in vars(type(self)):
+            if isinstance(getattr(type(self), name), Dependency):
+                # trigger descriptor __get__ to ensure DependencyState exists
+                getattr(self, name)
+        for name, state in self._dependencies.items():
+            if state._provider is None:
+                raise RuntimeError(f"no provider registered for: {name}")
+            state.resolve()
+
     def reset(self) -> None:
         for state in self._dependencies.values():
             state.reset()
