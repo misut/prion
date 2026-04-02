@@ -285,3 +285,52 @@ class TestOverride:
         with pytest.raises(KeyError, match="unknown dependency"):
             with container.override("nonexistent", lambda: "x"):
                 pass
+
+
+class TestWarm:
+    def test_warm_resolves_all_singletons(self) -> None:
+        container = Container()
+        call_count = 0
+
+        @container.value
+        def provide_value() -> str:
+            nonlocal call_count
+            call_count += 1
+            return "hello"
+
+        @container.creator
+        def provide_creator() -> str:
+            return "world"
+
+        container.warm()
+        assert call_count == 1
+        assert container.value == "hello"
+
+    def test_warm_raises_on_missing_provider(self) -> None:
+        container = Container()
+
+        @container.value
+        def provide_value() -> str:
+            return "hello"
+
+        # creator has no provider
+        with pytest.raises(RuntimeError, match="no provider registered for: creator"):
+            container.warm()
+
+    def test_warm_detects_circular_dependency(self) -> None:
+        class Circular(Syringe):
+            a = single[str]()
+            b = single[str]()
+
+        container = Circular()
+
+        @container.a
+        def create_a(b: str) -> str:
+            return f"a({b})"
+
+        @container.b
+        def create_b(a: str) -> str:
+            return f"b({a})"
+
+        with pytest.raises(RuntimeError, match="circular dependency"):
+            container.warm()

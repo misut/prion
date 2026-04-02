@@ -73,6 +73,25 @@ Providers can receive other dependencies as parameters. Parameter names are matc
 
 Circular dependencies are detected at resolve time with a `RuntimeError`.
 
+## Eager Initialization
+
+Use `warm()` to resolve all dependencies upfront. This validates that every provider is registered and detects circular dependencies at boot time.
+
+```pycon
+>>> syringe = AppSyringe()
+
+>>> @syringe.config
+... def create_config() -> dict:
+...     return {"debug": True}
+
+>>> @syringe.session
+... def create_session() -> dict:
+...     return {}
+
+>>> syringe.warm()
+
+```
+
 ## Lifecycle
 
 Use `reset()` to clear all cached singletons, or use the container as a context manager.
