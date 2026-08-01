@@ -16,7 +16,7 @@ jobs:
       id-token: write
     steps:
       - uses: actions/checkout@v7
-      - uses: jdx/mise-action@v4
+      - uses: jdx/mise-action@v4.2.3
       - run: uv build
       - run: uv publish --publish-url https://test.pypi.org/legacy/ --trusted-publishing always
 
@@ -30,6 +30,6 @@ jobs:
       id-token: write
     steps:
       - uses: actions/checkout@v7
-      - uses: jdx/mise-action@v4
+      - uses: jdx/mise-action@v4.2.3
       - run: uv build
       - run: uv publish --trusted-publishing always
